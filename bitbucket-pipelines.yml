@@ -1,0 +1,20 @@
+image: python:2.7.12
+
+pipelines:
+  branches:
+    develop:
+      - step:
+          name: Build & Deploy RandomNumberGeneration DEV
+          caches:
+            - node
+            - pip
+          script: # Modify the commands below to build your repository.
+            - apt-get update # required to install zip
+            - pip install awscli #require to deploy serverless
+            - curl -sL https://deb.nodesource.com/setup_9.x | bash -
+            - apt-get install -y nodejs zip
+            - npm install -g serverless
+            - npm install serverless-python-requirements --unsafe
+            - npm install serverless-step-functions --unsafe
+            - pip install -r requirements.txt
+#            - sls deploy --stage dev --region us-east-1

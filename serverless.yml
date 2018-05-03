@@ -1,0 +1,42 @@
+service: example-aws-step-functions
+
+provider:
+  name: aws
+  runtime: python2.7
+
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  memorySize: 256 # Default memory size for lambda functions
+  timeout: 300 # Default timeout for lambda functions. Serverless defaults to 6 seconds. Note: API Gateway current maximum is 30 seconds
+  versionFunctions: true
+
+  environment:
+    STAGE: ${opt:stage}
+
+functions:
+  random_number:
+    handler: handler.random_number
+  print_input:
+    handler: handler.print_input
+
+stepFunctions:
+  stateMachines:
+    RandomNumberStepFunc:
+      name: RandomNumber
+      definition:
+        Comment: "An example of the Amazon States Language using an AWS Lambda Function"
+        StartAt: GetRandomNumber
+        States:
+          GetRandomNumber:
+            Type: Task
+            Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-random_number"
+            Next: PrintRandomNumber
+          PrintRandomNumber:
+            Type: Task
+            Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-print_input"
+            End: true
+
+plugins:
+  - serverless-python-requirements
+  - serverless-step-functions
+  - serverless-pseudo-parameters
